@@ -2,6 +2,15 @@ name: Fdroid version file generation
 
 on:
   workflow_dispatch:
+    inputs:
+      enable_fdroid:
+        description: 'Enable F-Droid version file generation'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+        - 'true'
+        - 'false'
   push:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
@@ -16,6 +25,8 @@ jobs:
   update-fdroid-version-file:
     name: Publish RustDesk version file for F-Droid updater
     runs-on: ubuntu-latest
+    # Skip for forks or if explicitly disabled
+    if: ${{ github.repository == 'liannihuihui/yuankong-zz' && (github.event.inputs.enable_fdroid != 'false' || github.event_name == 'push') }}
     steps:
       - name: Generate RustDesk version file
         run: |
@@ -23,17 +34,22 @@ jobs:
             UPSTREAM_VERNAME="${GITHUB_REF##refs/tags/}"
             UPSTREAM_VERNAME="${UPSTREAM_VERNAME##v}"
           else
-            UPSTREAM_VERNAME="$(curl https://api.github.com/repos/rustdesk/rustdesk/releases/latest  | jq -r .tag_name | sed 's/^v//')"
+            # For our fork, use our own latest release
+            UPSTREAM_VERNAME="$(curl https://api.github.com/repos/liannihuihui/yuankong-zz/releases/latest  | jq -r .tag_name | sed 's/^v//')"
           fi
           UPSTREAM_VERCODE="$(echo "$UPSTREAM_VERNAME" | tr '.' ' ' | tr '-' ' ' | while read -r MAJOR MINOR PATCH REV; do [ -z "$MAJOR" ] && MAJOR=0; [ -z "$MINOR" ] && MINOR=0; [ -z "$PATCH" ] && PATCH=0; [ -z "$REV" ] && REV=0; echo "$(( 1000000 * $MAJOR + 10000 * $MINOR + 100 * $PATCH + $REV ))"; done)"
           echo "versionName=$UPSTREAM_VERNAME"  > rustdesk-version.txt
           echo "versionCode=$UPSTREAM_VERCODE" >> rustdesk-version.txt
+          echo "Generated version file for yuankong-zz:"
+          cat rustdesk-version.txt
         shell: bash
 
       - name: Publish RustDesk version file
         uses: softprops/action-gh-release@v1
         with:
           prerelease: true
-          tag_name: "fdroid-version"
+          tag_name: "fdroid-version-yuankong-zz"
           files: |
             ./rustdesk-version.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

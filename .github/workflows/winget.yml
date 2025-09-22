@@ -1,15 +1,45 @@
 name: Publish to WinGet
 on:
-  release:
-    types: [released]
+  # Disable automatic winget publishing for this fork
+  # Original triggers on release, but we don't have winget publish permissions
   workflow_dispatch:
+    inputs:
+      enable_winget:
+        description: 'Enable WinGet publishing (requires WINGET_TOKEN)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+        - 'true'
+        - 'false'
+
 jobs:
   publish:
     runs-on: ubuntu-latest
+    # Only run if explicitly enabled and token exists
+    if: ${{ github.event.inputs.enable_winget == 'true' && secrets.WINGET_TOKEN != '' }}
     steps:
+      - name: Extract version from tag
+        id: version
+        run: |
+          # Extract version from tag name (e.g., v1.0.1-ci-fixed -> 1.0.1-ci-fixed)
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
       - uses: vedantmgoyal9/winget-releaser@main
         with:
           identifier: RustDesk.RustDesk
-          version: "1.4.2"
-          release-tag: "1.4.2"
+          version: ${{ steps.version.outputs.version }}
+          release-tag: ${{ steps.version.outputs.version }}
           token: ${{ secrets.WINGET_TOKEN }}
+
+  # Alternative job that always succeeds for forks without winget access
+  publish_skip:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.enable_winget != 'true' || secrets.WINGET_TOKEN == '' }}
+    steps:
+      - name: Skip WinGet publishing
+        run: |
+          echo "WinGet publishing skipped - no token or not enabled"
+          echo "This fork doesn't have WinGet publishing permissions"
+          echo "Release was successful, just skipping WinGet update"
