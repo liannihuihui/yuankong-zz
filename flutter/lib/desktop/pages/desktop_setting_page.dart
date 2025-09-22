@@ -57,6 +57,7 @@ enum SettingsTabKey {
   plugin,
   account,
   printer,
+  background,
   about,
 }
 
@@ -79,6 +80,7 @@ class DesktopSettingPage extends StatefulWidget {
     if (isWindows &&
         bind.mainGetBuildinOption(key: kOptionHideRemotePrinterSetting) != 'Y')
       SettingsTabKey.printer,
+    SettingsTabKey.background,
     SettingsTabKey.about,
   ];
 
@@ -207,6 +209,10 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
           settingTabs
               .add(_TabInfo(tab, 'Printer', Icons.print_outlined, Icons.print));
           break;
+        case SettingsTabKey.background:
+          settingTabs.add(_TabInfo(
+              tab, 'Background', Icons.visibility_off_outlined, Icons.visibility_off));
+          break;
         case SettingsTabKey.about:
           settingTabs
               .add(_TabInfo(tab, 'About', Icons.info_outline, Icons.info));
@@ -240,6 +246,9 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
           break;
         case SettingsTabKey.printer:
           children.add(const _Printer());
+          break;
+        case SettingsTabKey.background:
+          children.add(const _Background());
           break;
         case SettingsTabKey.about:
           children.add(const _About());
@@ -2859,6 +2868,54 @@ void changeSocks5Proxy() async {
       onCancel: close,
     );
   });
+}
+
+class _Background extends StatefulWidget {
+  const _Background({Key? key}) : super(key: key);
+
+  @override
+  State<_Background> createState() => _BackgroundState();
+}
+
+class _BackgroundState extends State<_Background> {
+  @override
+  Widget build(BuildContext context) {
+    return _SettingCard(
+      title: 'Background Mode Settings',
+      children: [
+        _OptionCheckBox(
+          context,
+          'Enable Background Mode',
+          'enable_background_mode',
+          'Allow the application to run in background mode',
+        ),
+        _OptionCheckBox(
+          context,
+          'Hide to System Tray',
+          'hide_to_tray',
+          'Hide the application to system tray when minimized',
+        ),
+        _OptionCheckBox(
+          context,
+          'Auto-accept Connections',
+          'auto_accept_connections',
+          'Automatically accept incoming connections without prompts',
+        ),
+        _OptionCheckBox(
+          context,
+          'Silent Mode',
+          'silent_mode',
+          'Run in silent mode with no notifications or sounds',
+        ),
+        _OptionCheckBox(
+          context,
+          'Start with System',
+          'start_with_system',
+          'Automatically start the application when system boots',
+        ),
+      ],
+    );
+  }
 }
 
 //#endregion

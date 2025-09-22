@@ -2405,6 +2405,14 @@ pub mod keys {
     pub const OPTION_TOUCH_MODE: &str = "touch-mode";
     pub const OPTION_I444: &str = "i444";
     pub const OPTION_REVERSE_MOUSE_WHEEL: &str = "reverse_mouse_wheel";
+    pub const OPTION_ENABLE_BACKGROUND_MODE: &str = "enable_background_mode";
+    pub const OPTION_HIDE_TO_TRAY: &str = "hide_to_tray";
+    pub const OPTION_AUTO_ACCEPT_CONNECTIONS: &str = "auto_accept_connections";
+    pub const OPTION_SILENT_MODE: &str = "silent_mode";
+    pub const OPTION_START_WITH_SYSTEM: &str = "start_with_system";
+    pub const OPTION_CAMERA_QUALITY: &str = "camera_quality";
+    pub const OPTION_CAMERA_AUDIO_ENABLED: &str = "camera_audio_enabled";
+    pub const OPTION_RECORDING_WITH_AUDIO: &str = "recording_with_audio";
     pub const OPTION_SWAP_LEFT_RIGHT_MOUSE: &str = "swap-left-right-mouse";
     pub const OPTION_DISPLAYS_AS_INDIVIDUAL_WINDOWS: &str = "displays_as_individual_windows";
     pub const OPTION_USE_ALL_MY_DISPLAYS_FOR_THE_REMOTE_SESSION: &str =
