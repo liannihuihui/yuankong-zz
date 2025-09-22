@@ -2839,7 +2839,20 @@ class RecordingModel with ChangeNotifier {
     if (value) {
       await sessionRefreshVideo(sessionId, pi);
     }
+
+    // Check if recording with audio is enabled
+    final recordWithAudio = bind.getLocalFlutterOption(k: 'recording_with_audio') == 'true';
+
     await bind.sessionRecordScreen(sessionId: sessionId, start: value);
+
+    // If starting recording and audio is enabled, start audio recording too
+    if (value && recordWithAudio) {
+      // This would trigger remote audio recording alongside screen recording
+      await bind.sessionSetOption(sessionId: sessionId, name: 'record-audio', value: 'Y');
+    } else if (!value && recordWithAudio) {
+      // Stop audio recording when stopping screen recording
+      await bind.sessionSetOption(sessionId: sessionId, name: 'record-audio', value: 'N');
+    }
   }
 
   updateStatus(bool status) {

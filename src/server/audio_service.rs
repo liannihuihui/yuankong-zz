@@ -60,6 +60,11 @@ pub fn set_voice_call_input_device(device: Option<String>, set_if_present: bool)
 
 #[inline]
 fn get_audio_input() -> String {
+    // Check if camera audio is enabled
+    if config::LocalConfig::get_option("camera_audio_enabled") != "Y" {
+        return String::new(); // Return empty string to disable audio
+    }
+
     VOICE_CALL_INPUT_DEVICE
         .lock()
         .unwrap()

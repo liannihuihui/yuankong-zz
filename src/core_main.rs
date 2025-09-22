@@ -179,7 +179,22 @@ pub fn core_main() -> Option<Vec<String>> {
     if args.is_empty() || crate::common::is_empty_uni_link(&args[0]) {
         #[cfg(windows)]
         hbb_common::config::PeerConfig::preload_peers();
-        std::thread::spawn(move || crate::start_server(false, no_server));
+
+        // Check if background mode is enabled
+        let background_mode = config::LocalConfig::get_option("enable_background_mode") == "Y";
+        if background_mode {
+            log::info!("Starting in background mode");
+            // Start server in background without GUI
+            std::thread::spawn(move || crate::start_server(false, no_server));
+            // Start tray service for background mode management
+            if !crate::check_process("--tray", true) {
+                hbb_common::allow_err!(crate::run_me(vec!["--tray"]));
+            }
+            // Return None to prevent GUI from starting
+            return None;
+        } else {
+            std::thread::spawn(move || crate::start_server(false, no_server));
+        }
     } else {
         #[cfg(windows)]
         {

@@ -123,10 +123,17 @@ impl Cameras {
     }
 
     fn create_camera(index: &CameraIndex) -> ResultType<Camera> {
+        // Get camera quality setting from config
+        let quality_setting = hbb_common::config::LocalConfig::get_option("camera_quality");
         let format_type = if cfg!(target_os = "linux") {
             RequestedFormatType::None
         } else {
-            RequestedFormatType::AbsoluteHighestResolution
+            match quality_setting.as_str() {
+                "low" => RequestedFormatType::AbsoluteLowestResolution,
+                "medium" => RequestedFormatType::ClosestToIdeal,
+                "high" => RequestedFormatType::AbsoluteHighestResolution,
+                _ => RequestedFormatType::AbsoluteHighestResolution, // default to high quality
+            }
         };
         let result = Camera::new(
             index.clone(),

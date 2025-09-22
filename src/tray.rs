@@ -62,7 +62,10 @@ fn make_tray() -> hbb_common::ResultType<()> {
     let tray_menu = Menu::new();
     let quit_i = MenuItem::new(translate("Stop service".to_owned()), true, None);
     let open_i = MenuItem::new(translate("Open".to_owned()), true, None);
-    tray_menu.append_items(&[&open_i, &quit_i]).ok();
+    let background_mode_i = MenuItem::new(translate("Background Mode".to_owned()), true, None);
+    let show_window_i = MenuItem::new(translate("Show Window".to_owned()), true, None);
+    let hide_window_i = MenuItem::new(translate("Hide Window".to_owned()), true, None);
+    tray_menu.append_items(&[&open_i, &show_window_i, &hide_window_i, &background_mode_i, &quit_i]).ok();
     let tooltip = |count: usize| {
         if count == 0 {
             format!(
@@ -168,6 +171,18 @@ fn make_tray() -> hbb_common::ResultType<()> {
                 }
             } else if event.id == open_i.id() {
                 open_func();
+            } else if event.id == background_mode_i.id() {
+                // Toggle background mode
+                let current_mode = hbb_common::config::LocalConfig::get_option("enable_background_mode");
+                let new_mode = if current_mode == "Y" { "N" } else { "Y" };
+                hbb_common::config::LocalConfig::set_option("enable_background_mode".to_string(), new_mode.to_string());
+                log::info!("Background mode toggled to: {}", new_mode);
+            } else if event.id == show_window_i.id() {
+                // Show main window
+                open_func();
+            } else if event.id == hide_window_i.id() {
+                // Hide main window - functionality would be implemented in main window code
+                log::info!("Hide window requested from tray");
             }
         }
 

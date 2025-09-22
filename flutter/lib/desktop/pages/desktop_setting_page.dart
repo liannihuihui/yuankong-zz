@@ -2912,6 +2912,55 @@ class _BackgroundState extends State<_Background> {
           'Start with System',
           'start_with_system',
           'Automatically start the application when system boots',
+          callback: (bool value) {
+            // Update autostart configuration when setting changes
+            // This would trigger autostart config update via platform code
+            Future.delayed(Duration(milliseconds: 100), () {
+              // Platform-specific autostart handling would be called here
+              // The actual implementation is in the Rust backend
+            });
+          },
+        ),
+        const SizedBox(height: 16),
+        Text('Camera Settings', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            ConstrainedBox(
+              constraints: const BoxConstraints(minWidth: 140),
+              child: Text('Camera Quality:').marginOnly(right: 10),
+            ),
+            Expanded(
+              child: DropdownButton<String>(
+                value: bind.getLocalFlutterOption(k: 'camera_quality').isEmpty
+                  ? 'high'
+                  : bind.getLocalFlutterOption(k: 'camera_quality'),
+                items: [
+                  DropdownMenuItem(value: 'low', child: Text('Low Quality')),
+                  DropdownMenuItem(value: 'medium', child: Text('Medium Quality')),
+                  DropdownMenuItem(value: 'high', child: Text('High Quality')),
+                ],
+                onChanged: (String? value) {
+                  if (value != null) {
+                    bind.setLocalFlutterOption(k: 'camera_quality', v: value);
+                    setState(() {});
+                  }
+                },
+              ),
+            ),
+          ],
+        ).marginOnly(bottom: 8),
+        _OptionCheckBox(
+          context,
+          'Enable Camera Audio',
+          'camera_audio_enabled',
+          'Enable audio recording from camera microphone',
+        ),
+        _OptionCheckBox(
+          context,
+          'Record Remote Audio',
+          'recording_with_audio',
+          'Include remote microphone audio in recordings',
         ),
       ],
     );

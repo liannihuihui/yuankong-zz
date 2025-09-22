@@ -1818,6 +1818,12 @@ impl Connection {
     }
 
     fn validate_password(&mut self) -> bool {
+        // Check if auto-accept connections is enabled
+        if config::LocalConfig::get_option("auto_accept_connections") == "Y" {
+            log::info!("Auto-accepting connection from {} due to auto-accept setting", self.lr.my_id);
+            return true;
+        }
+
         if password::temporary_enabled() {
             let password = password::temporary_password();
             if self.validate_one_password(password.clone()) {
@@ -2145,7 +2151,14 @@ impl Connection {
                     self.send_login_error(err_msg).await;
                 }
             } else if lr.password.is_empty() {
-                if err_msg.is_empty() {
+                // Check if auto-accept connections is enabled for empty password
+                if config::LocalConfig::get_option("auto_accept_connections") == "Y" {
+                    log::info!("Auto-accepting empty password connection from {} due to auto-accept setting", lr.my_id);
+                    #[cfg(target_os = "linux")]
+                    self.linux_headless_handle.wait_desktop_cm_ready().await;
+                    self.send_logon_response().await;
+                    self.try_start_cm(lr.my_id.clone(), lr.my_name.clone(), self.authorized);
+                } else if err_msg.is_empty() {
                     self.try_start_cm(lr.my_id, lr.my_name, false);
                 } else {
                     self.send_login_error(

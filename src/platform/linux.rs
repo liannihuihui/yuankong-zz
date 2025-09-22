@@ -1521,26 +1521,44 @@ pub fn check_autostart_config() -> ResultType<()> {
     let app_name = crate::get_app_name().to_lowercase();
     let path = format!("{home}/.config/autostart");
     let file = format!("{path}/{app_name}.desktop");
-    // https://github.com/rustdesk/rustdesk/issues/4863
-    std::fs::remove_file(&file).ok();
-    /*
+
+    // Check if auto-start is enabled
+    let enable_autostart = hbb_common::config::LocalConfig::get_option("start_with_system") == "Y";
+
+    if enable_autostart {
+        // Create autostart directory and desktop file
         std::fs::create_dir_all(&path).ok();
         if !Path::new(&file).exists() {
             // write text to the desktop file
-            let mut file = std::fs::File::create(&file)?;
-            file.write_all(
+            let exe_path = std::env::current_exe().unwrap_or_default();
+            let mut desktop_file = std::fs::File::create(&file)?;
+            desktop_file.write_all(
                 format!(
-                    "
-    [Desktop Entry]
-    Type=Application
-    Exec={app_name} --tray
-    NoDisplay=false
-            "
+                    "[Desktop Entry]
+Type=Application
+Exec={} --tray
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+Name={} Tray
+Comment=Start {} in tray mode
+                    ",
+                    exe_path.display(),
+                    crate::get_app_name(),
+                    crate::get_app_name()
                 )
                 .as_bytes(),
             )?;
+            log::info!("Created autostart desktop file: {}", file);
         }
-        */
+    } else {
+        // Remove autostart file if auto-start is disabled
+        if Path::new(&file).exists() {
+            std::fs::remove_file(&file).ok();
+            log::info!("Removed autostart desktop file: {}", file);
+        }
+    }
+
     Ok(())
 }
 
