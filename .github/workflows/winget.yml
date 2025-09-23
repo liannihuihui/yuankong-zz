@@ -1,7 +1,5 @@
 name: Publish to WinGet
 on:
-  # Disable automatic winget publishing for this fork
-  # Original triggers on release, but we don't have winget publish permissions
   workflow_dispatch:
     inputs:
       enable_winget:
@@ -16,13 +14,11 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    # Only run if explicitly enabled and token exists
     if: ${{ github.event.inputs.enable_winget == 'true' && secrets.WINGET_TOKEN != '' }}
     steps:
       - name: Extract version from tag
         id: version
         run: |
-          # Extract version from tag name (e.g., v1.0.1-ci-fixed -> 1.0.1-ci-fixed)
           VERSION=${GITHUB_REF#refs/tags/v}
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
@@ -33,7 +29,6 @@ jobs:
           release-tag: ${{ steps.version.outputs.version }}
           token: ${{ secrets.WINGET_TOKEN }}
 
-  # Alternative job that always succeeds for forks without winget access
   publish_skip:
     runs-on: ubuntu-latest
     if: ${{ github.event.inputs.enable_winget != 'true' || secrets.WINGET_TOKEN == '' }}
